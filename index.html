@@ -141,6 +141,8 @@ const esc=s=>s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
 
 const FIX=[["何語","なにご"],["何人","なんにん"],["何時","なんじ"],["何分","なんぷん"],["何曜日","なんようび"],["何番","なんばん"],["何年","なんねん"],["何月","なんがつ"],["何日","なんにち"],["何歳","なんさい"],["何階","なんがい"],["何回","なんかい"],["何枚","なんまい"],["何台","なんだい"],["一人","ひとり"],["二人","ふたり"],["二十日","はつか"],["十日","とおか"],
   [/何(?=[のでとだ]|です)/g,"なん"],[/何(?=[をがもかにへ])/g,"なに"],[/([三四五六七八九十百千]+)人/g,"$1にん"],[/([ァ-ヶー]+|台湾|中国|韓国|日本|外国)人/g,"$1じん"],[/(?<!そう(です|でした))か。/g,"か？"]];
+const KANA_SAY=new Set(["来る","何","人","開く","空く","方","間","中","上","下","外","日","分","風","角","家","紅葉","明日","上手","下手","止める","弾く","汚す","生","後","君","台","目","屋","側","時"]);
+const sayWord=w=>{const t=w.w.replace(/～/g,"");return KANA_SAY.has(t)||!/[一-鿿]/.test(t)||w.w.indexOf("～")>0?w.k.replace(/～/g,""):t};
 const reading=t=>FIX.reduce((a,[r,v])=>a.replaceAll(r,v),t);
 function speak(t){try{const u=new SpeechSynthesisUtterance(reading(t));u.lang="ja-JP";u.rate=.9;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
 const lidx=k=>LESSONS.findIndex(l=>l.key===k);
@@ -157,7 +159,7 @@ function face(w,hide){
   const h=hide?' hidden-ans" data-reveal="1':'';
   return `${w.c?`<div class="cue" aria-hidden="true">${w.c}</div>`:""}
   <div class="word">${esc(w.w)}</div>
-  <div class="kana">${w.k}<button class="speak" data-say="${w.k}" aria-label="播放發音">▶</button></div>
+  <div class="kana">${w.k}<button class="speak" data-say="${sayWord(w)}" aria-label="播放發音">▶</button></div>
   <div class="mean${h}"><span class="pos">${w.p}</span>${esc(w.m)}</div>
   ${w.ex.length?`<div class="ex${h}">${w.ex.map(([t,j,z,r])=>`<div class="exi"><div class="jp">${t?`<span class="tag">${t}</span>`:""}${j}</div><button class="speak" data-say="${r||plain(j)}" aria-label="播放例句">▶</button><div class="zh">${esc(z)}</div></div>`).join("")}</div>`:""}`;
 }
@@ -202,7 +204,7 @@ function render(){
         const q=quiz.qs[quiz.i];
         h=`<div class="top"><span>${q.mode==="m"?"選出正確意思":"選出正確讀音"}</span><span>${quiz.wrongOnly?"錯題模式":"隨機"}</span></div>
         <div class="word">${esc(q.w.w)}</div>
-        ${q.mode==="m"?`<div class="kana">${q.w.k}<button class="speak" data-say="${q.w.k}" aria-label="播放發音">▶</button></div>`:""}
+        ${q.mode==="m"?`<div class="kana">${q.w.k}<button class="speak" data-say="${sayWord(q.w)}" aria-label="播放發音">▶</button></div>`:""}
         <div class="choices">${q.opts.map((o,j)=>{
           let cls=""; if(q.picked!==undefined){ if(o.id===q.w.id) cls="right"; else if(j===q.picked) cls="wrong"; }
           return `<button class="choice ${cls}" data-pick="${j}" ${q.picked!==undefined?"disabled":""}>${esc(q.mode==="m"?o.m:o.k)}</button>`}).join("")}</div>
@@ -257,11 +259,11 @@ card.addEventListener("click",e=>{
   if(d.reveal&&view==="review"){reveal=true;render();return}
   if(d.go){view=d.go;render();return}
   if(d.filter){bookFilter=d.filter;render();return}
-  if(d.skim){const w=unseen()[0]; S.cards[w.id]= d.skim==="learn"?{due:Date.now(),iv:0,ease:2.5}:{due:Date.now()+30*DAY,iv:30*DAY,ease:3}; S.skimDone++; save(); render(); const n=unseen()[0]; if(n&&view==="skim") speak(n.k); return}
+  if(d.skim){const w=unseen()[0]; S.cards[w.id]= d.skim==="learn"?{due:Date.now(),iv:0,ease:2.5}:{due:Date.now()+30*DAY,iv:30*DAY,ease:3}; S.skimDone++; save(); render(); const n=unseen()[0]; if(n&&view==="skim") speak(sayWord(n)); return}
   if(d.grade){grade(+d.grade);return}
   if(d.pick!==undefined){const q=quiz.qs[quiz.i]; q.picked=+d.pick; const ok=q.opts[q.picked].id===q.w.id;
     if(ok){quiz.ok++; if(S.wrong[q.w.id]&&quiz.wrongOnly){delete S.wrong[q.w.id]}} else S.wrong[q.w.id]=(S.wrong[q.w.id]||0)+1;
-    speak(q.w.k); save(); render(); return}
+    speak(sayWord(q.w)); save(); render(); return}
   const a=d.act;
   if(a==="reveal"){reveal=true;render()}
   if(a==="extra"){extra=true;S.skimDone=DAILY-5;render()}
