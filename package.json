@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "scripts": {
+    "audio": "node tools/voicevox.mjs"
+  },
+  "devDependencies": {
+    "@breezystack/lamejs": "^1.2.7"
+  }
+}

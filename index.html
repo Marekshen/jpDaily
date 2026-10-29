@@ -115,12 +115,10 @@ button:focus-visible{outline:2px solid var(--ai);outline-offset:2px}
     <div class="bar"><i id="s-bar" style="width:0"></i></div>
   </div>
   <section class="card" id="card" aria-live="polite"></section>
-  <p class="note">進度只存在這台裝置的瀏覽器裡 · 發音：<select class="pick" id="voice" aria-label="選擇發音"></select></p>
+  <p class="note">進度只存在這台裝置的瀏覽器裡 · 語音：<select class="pick" id="voice" aria-label="選擇發音"></select></p>
 </div>
 
 <script src="data/minna-1.js"></script>
-<script src="data/minna-2.js"></script>
-<script src="data/minna-3.js"></script>
 <script>
 const W=(window.BOOKS||[]).flatMap(b=>b.words.map(a=>({id:`${b.id}-${a[0]}-${a[1]}`,b:b.id,bn:b.name,l:a[0],w:a[1],k:a[2],m:a[3],p:a[4],c:a[5],ex:a[6]||[]})));
 const LESSONS=[...new Map(W.map(w=>[`${w.b}-${w.l}`,{key:`${w.b}-${w.l}`,label:`${w.bn} 第${w.l}課`}])).values()];
@@ -141,15 +139,20 @@ const esc=s=>s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
 
 const FIX=[["何語","なにご"],["何人","なんにん"],["何時","なんじ"],["何分","なんぷん"],["何曜日","なんようび"],["何番","なんばん"],["何年","なんねん"],["何月","なんがつ"],["何日","なんにち"],["何歳","なんさい"],["何階","なんがい"],["何回","なんかい"],["何枚","なんまい"],["何台","なんだい"],["一人","ひとり"],["二人","ふたり"],["二十日","はつか"],["十日","とおか"],
   [/何(?=[のでとだ]|です)/g,"なん"],[/何(?=[をがもかにへ])/g,"なに"],[/([三四五六七八九十百千]+)人/g,"$1にん"],[/([ァ-ヶー]+|台湾|中国|韓国|日本|外国)人/g,"$1じん"],[/(?<!そう(です|でした))か。/g,"か？"]];
-const KANA_SAY=new Set(["来る","何","人","開く","空く","方","間","中","上","下","外","日","分","風","角","家","紅葉","明日","上手","下手","止める","弾く","汚す","生","後","君","台","目","屋","側","時"]);
-const sayWord=w=>{const t=w.w.replace(/～/g,"");return KANA_SAY.has(t)||!/[一-鿿]/.test(t)||w.w.includes("～")?w.k.replace(/～/g,""):t};
+const KANA_SAY=new Set(["来る","「七人の侍」","何","人","開く","空く","方","間","中","上","下","外","日","分","風","角","家","紅葉","明日","上手","下手","止める","弾く","汚す","生","後","君","台","目","屋","側","時"]);
+const sayWord=w=>{const t=w.w.replace(/～/g,"");return(KANA_SAY.has(t)||!/[一-鿿]/.test(t)||/[～\d]/.test(w.w)?w.k:w.w).replace(/［[^］]*～[^］]*］/g,"").replace(/[（(／/]/g,"、").replace(/[～［］）)「」\s]/g,"")};
 const reading=t=>FIX.reduce((a,[r,v])=>a.replaceAll(r,v),t);
+const akey=s=>{let a=0xdeadbeef,b=0x41c6ce57;for(const c of s){const k=c.codePointAt(0);a=Math.imul(a^k,2654435761);b=Math.imul(b^k,1597334677)}a=Math.imul(a^a>>>16,2246822507)^Math.imul(b^b>>>13,3266489909);b=Math.imul(b^b>>>16,2246822507)^Math.imul(a^a>>>13,3266489909);return(4294967296*(2097151&b)+(a>>>0)).toString(36)};
 const jaVoices=()=>{try{return speechSynthesis.getVoices().filter(v=>/^ja/i.test(v.lang))}catch(e){return []}};
 const voiceRank=v=>/natural|online|neural/i.test(v.name)?0:/google/i.test(v.name)?1:/nanami|kyoko|o-ren/i.test(v.name)?2:3;
-const pickVoice=()=>{const vs=jaVoices();return vs.find(v=>v.name===S.voice)||vs.slice().sort((a,b)=>voiceRank(a)-voiceRank(b))[0]};
-function fillVoices(){const vs=jaVoices(), cur=pickVoice(), sel=$("voice");
-  sel.innerHTML=vs.length?vs.map(v=>`<option${cur&&v.name===cur.name?" selected":""}>${esc(v.name)}</option>`).join(""):"<option>瀏覽器預設</option>"}
-function speak(t){try{const u=new SpeechSynthesisUtterance(reading(t));u.lang="ja-JP";const v=pickVoice();if(v)u.voice=v;u.rate=.9;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
+const pickVoice=()=>{const vs=jaVoices();return vs.find(v=>v.name===S.tts)||vs.slice().sort((a,b)=>voiceRank(a)-voiceRank(b))[0]};
+function fillVoices(){const vs=jaVoices(), sel=$("voice");
+  sel.innerHTML=`<option value="">VOICEVOX:No.7</option>`+vs.map(v=>`<option${v.name===S.tts?" selected":""}>${esc(v.name)}</option>`).join("")}
+function tts(s){try{const u=new SpeechSynthesisUtterance(s);u.lang="ja-JP";const v=pickVoice();if(v)u.voice=v;u.rate=.9;speechSynthesis.speak(u)}catch(e){}}
+let clip=null;
+function speak(t){const s=reading(t);try{speechSynthesis.cancel()}catch(e){}if(clip)clip.pause();
+  if(S.tts){tts(s);return}
+  clip=new Audio(`audio/${akey(s)}.mp3`);clip.onerror=()=>tts(s);clip.play().catch(()=>{})}
 const lidx=k=>LESSONS.findIndex(l=>l.key===k);
 const unseen=()=>{const f=lidx(S.from);return W.filter(w=>!S.cards[w.id]&&lidx(lkey(w))>=f)};
 const plain=h=>h.replace(/<[^>]+>/g,"").replace(/"/g,"");
@@ -165,7 +168,7 @@ function face(w,hide){
   return `${w.c?`<div class="cue" aria-hidden="true">${w.c}</div>`:""}
   <div class="word">${esc(w.w)}</div>
   <div class="kana">${w.k}<button class="speak" data-say="${sayWord(w)}" aria-label="播放發音">▶</button></div>
-  <div class="mean${h}"><span class="pos">${w.p}</span>${esc(w.m)}</div>
+  <div class="mean${h}">${w.p?`<span class="pos">${w.p}</span>`:""}${esc(w.m)}</div>
   ${w.ex.length?`<div class="ex${h}">${w.ex.map(([t,j,z,r])=>`<div class="exi"><div class="jp">${t?`<span class="tag">${t}</span>`:""}${j}</div><button class="speak" data-say="${r||plain(j)}" aria-label="播放例句">▶</button><div class="zh">${esc(z)}</div></div>`).join("")}</div>`:""}`;
 }
 
@@ -284,7 +287,7 @@ document.addEventListener("keydown",e=>{
 setInterval(()=>{if(document.hidden)return;S.secs++; if(S.secs%5===0)save(); const r=card.querySelector(".ring"); if(r) r.outerHTML=ring();},1000);
 $("from").innerHTML=LESSONS.map(l=>`<option value="${l.key}"${l.key===S.from?" selected":""}>${l.label}</option>`).join("");
 fillVoices();try{speechSynthesis.addEventListener("voiceschanged",fillVoices)}catch(e){}
-$("voice").addEventListener("change",e=>{S.voice=e.target.value;save();speak("これは椅子です。")});
+$("voice").addEventListener("change",e=>{S.tts=e.target.value;save();speak("これは椅子です。")});
 $("from").addEventListener("change",e=>{S.from=e.target.value;save();quiz=null;render()});
 render();
 </script>

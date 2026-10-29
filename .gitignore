@@ -1,1 +1,3 @@
 .playwright-mcp/
+audio-test/
+node_modules/
