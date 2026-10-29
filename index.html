@@ -115,7 +115,7 @@ button:focus-visible{outline:2px solid var(--ai);outline-offset:2px}
     <div class="bar"><i id="s-bar" style="width:0"></i></div>
   </div>
   <section class="card" id="card" aria-live="polite"></section>
-  <p class="note">進度只存在這台裝置的瀏覽器裡 · 發音使用瀏覽器內建語音</p>
+  <p class="note">進度只存在這台裝置的瀏覽器裡 · 發音：<select class="pick" id="voice" aria-label="選擇發音"></select></p>
 </div>
 
 <script src="data/minna-1.js"></script>
@@ -144,7 +144,12 @@ const FIX=[["何語","なにご"],["何人","なんにん"],["何時","なんじ
 const KANA_SAY=new Set(["来る","何","人","開く","空く","方","間","中","上","下","外","日","分","風","角","家","紅葉","明日","上手","下手","止める","弾く","汚す","生","後","君","台","目","屋","側","時"]);
 const sayWord=w=>{const t=w.w.replace(/～/g,"");return KANA_SAY.has(t)||!/[一-鿿]/.test(t)||w.w.includes("～")?w.k.replace(/～/g,""):t};
 const reading=t=>FIX.reduce((a,[r,v])=>a.replaceAll(r,v),t);
-function speak(t){try{const u=new SpeechSynthesisUtterance(reading(t));u.lang="ja-JP";u.rate=.9;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
+const jaVoices=()=>{try{return speechSynthesis.getVoices().filter(v=>/^ja/i.test(v.lang))}catch(e){return []}};
+const voiceRank=v=>/natural|online|neural/i.test(v.name)?0:/google/i.test(v.name)?1:/nanami|kyoko|o-ren/i.test(v.name)?2:3;
+const pickVoice=()=>{const vs=jaVoices();return vs.find(v=>v.name===S.voice)||vs.slice().sort((a,b)=>voiceRank(a)-voiceRank(b))[0]};
+function fillVoices(){const vs=jaVoices(), cur=pickVoice(), sel=$("voice");
+  sel.innerHTML=vs.length?vs.map(v=>`<option${cur&&v.name===cur.name?" selected":""}>${esc(v.name)}</option>`).join(""):"<option>瀏覽器預設</option>"}
+function speak(t){try{const u=new SpeechSynthesisUtterance(reading(t));u.lang="ja-JP";const v=pickVoice();if(v)u.voice=v;u.rate=.9;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
 const lidx=k=>LESSONS.findIndex(l=>l.key===k);
 const unseen=()=>{const f=lidx(S.from);return W.filter(w=>!S.cards[w.id]&&lidx(lkey(w))>=f)};
 const plain=h=>h.replace(/<[^>]+>/g,"").replace(/"/g,"");
@@ -278,6 +283,8 @@ document.addEventListener("keydown",e=>{
 });
 setInterval(()=>{if(document.hidden)return;S.secs++; if(S.secs%5===0)save(); const r=card.querySelector(".ring"); if(r) r.outerHTML=ring();},1000);
 $("from").innerHTML=LESSONS.map(l=>`<option value="${l.key}"${l.key===S.from?" selected":""}>${l.label}</option>`).join("");
+fillVoices();try{speechSynthesis.addEventListener("voiceschanged",fillVoices)}catch(e){}
+$("voice").addEventListener("change",e=>{S.voice=e.target.value;save();speak("これは椅子です。")});
 $("from").addEventListener("change",e=>{S.from=e.target.value;save();quiz=null;render()});
 render();
 </script>
