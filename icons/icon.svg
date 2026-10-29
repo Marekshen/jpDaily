@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#F4EEDF"/>
+  <rect x="40" y="40" width="432" height="432" rx="80" fill="none" stroke="#E2D7BE" stroke-width="2"/>
+  <g font-family="'Yuji Syuku',serif" font-size="120" fill="#1A1A1A" text-anchor="middle">
+    <text x="256" y="170">日</text>
+    <text x="256" y="292.4">本</text>
+    <text x="256" y="414.8">語</text>
+  </g>
+  <rect x="330" y="372" width="54" height="54" rx="6" fill="#C8242C"/>
+  <text x="357" y="410" text-anchor="middle" font-family="'Yuji Syuku',serif" font-size="34" fill="#F4EEDF">学</text>
+</svg>
