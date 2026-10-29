@@ -120,6 +120,7 @@ button:focus-visible{outline:2px solid var(--ai);outline-offset:2px}
 
 <script src="data/minna-1.js"></script>
 <script src="data/minna-2.js"></script>
+<script src="data/minna-3.js"></script>
 <script>
 const W=(window.BOOKS||[]).flatMap(b=>b.words.map(a=>({id:`${b.id}-${a[0]}-${a[1]}`,b:b.id,bn:b.name,l:a[0],w:a[1],k:a[2],m:a[3],p:a[4],c:a[5],ex:a[6]||[]})));
 const LESSONS=[...new Map(W.map(w=>[`${w.b}-${w.l}`,{key:`${w.b}-${w.l}`,label:`${w.bn} 第${w.l}課`}])).values()];
@@ -139,7 +140,7 @@ const $=id=>document.getElementById(id), card=$("card");
 const esc=s=>s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
 
 const FIX=[["何語","なにご"],["何人","なんにん"],["何時","なんじ"],["何分","なんぷん"],["何曜日","なんようび"],["何番","なんばん"],["何年","なんねん"],["何月","なんがつ"],["何日","なんにち"],["何歳","なんさい"],["何階","なんがい"],["何回","なんかい"],["何枚","なんまい"],["何台","なんだい"],["一人","ひとり"],["二人","ふたり"],["二十日","はつか"],["十日","とおか"],
-  [/何(?=[のでとだ]|です)/g,"なん"],[/何(?=[をがもかにへ])/g,"なに"],[/([三四五六七八九十百千]+)人/g,"$1にん"],[/([ァ-ヶー]+|台湾|中国|韓国|日本|外国)人/g,"$1じん"]];
+  [/何(?=[のでとだ]|です)/g,"なん"],[/何(?=[をがもかにへ])/g,"なに"],[/([三四五六七八九十百千]+)人/g,"$1にん"],[/([ァ-ヶー]+|台湾|中国|韓国|日本|外国)人/g,"$1じん"],[/(?<!そう(です|でした))か。/g,"か？"]];
 const reading=t=>FIX.reduce((a,[r,v])=>a.replaceAll(r,v),t);
 function speak(t){try{const u=new SpeechSynthesisUtterance(reading(t));u.lang="ja-JP";u.rate=.9;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
 const lidx=k=>LESSONS.findIndex(l=>l.key===k);
