@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>26秒日文單字</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@600;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+/* Layout: single phone-width column, top tab bar, one card at a time — like a deck of 単語カード on a desk */
+:root{
+  --bg:#E9EDF1; --paper:#FBFCFD; --ink:#17202B; --muted:#5E6B7A; --line:#D3DAE2;
+  --ai:#2B47A3; --ai-soft:#DCE3F6; --good:#2E7D4F; --warn:#B26A12; --bad:#B23A3A;
+  --display:"Shippori Mincho B1","Hiragino Mincho ProN","Noto Serif JP",serif;
+  --body:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans TC","PingFang TC",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#10151C; --paper:#19212B; --ink:#E7ECF2; --muted:#93A0B0; --line:#2B3643;
+  --ai:#8EA6F0; --ai-soft:#243256; --good:#6CC28E; --warn:#E0A453; --bad:#E57D7D; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10151C; --paper:#19212B; --ink:#E7ECF2; --muted:#93A0B0; --line:#2B3643;
+  --ai:#8EA6F0; --ai-soft:#243256; --good:#6CC28E; --warn:#E0A453; --bad:#E57D7D; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
+.wrap{max-width:440px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:.02em}
+.brand small{font-family:var(--body);font-weight:500;font-size:12px;color:var(--muted);margin-left:6px;letter-spacing:.08em}
+.level{font-size:12px;font-weight:700;letter-spacing:.1em;color:var(--ai);background:var(--ai-soft);padding:3px 10px;border-radius:99px}
+nav{display:grid;grid-template-columns:repeat(4,1fr);background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px}
+nav button{font:inherit;font-size:14px;border:0;background:none;color:var(--muted);padding:8px 4px;border-radius:9px;cursor:pointer;position:relative}
+nav button[aria-selected="true"]{background:var(--ai);color:var(--paper);font-weight:700}
+nav .badge{position:absolute;top:2px;right:6px;font-size:10px;min-width:16px;height:16px;line-height:16px;border-radius:8px;background:var(--bad);color:#fff;font-weight:700}
+button:focus-visible{outline:2px solid var(--ai);outline-offset:2px}
+.stats{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.bar{height:4px;background:var(--line);border-radius:2px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ai);transition:width .3s}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:22px 22px 20px;display:flex;flex-direction:column;gap:14px;min-height:430px;box-shadow:0 10px 30px -18px rgba(20,30,60,.35)}
+.top{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted)}
+.ring{width:34px;height:34px}
+.ring circle{fill:none;stroke-width:3}
+.ring .t{stroke:var(--line)} .ring .p{stroke:var(--ai);stroke-linecap:round;transition:stroke-dashoffset 1s linear}
+.ring text{font-size:11px;fill:var(--muted);font-family:var(--body);font-variant-numeric:tabular-nums}
+.cue{font-size:64px;line-height:1;text-align:center;padding:10px 0 4px}
+.word{font-family:var(--display);font-weight:800;font-size:52px;line-height:1.1;text-align:center;text-wrap:balance}
+.kana{text-align:center;color:var(--muted);font-size:16px;letter-spacing:.06em;display:flex;align-items:center;justify-content:center;gap:8px}
+.speak{border:1px solid var(--line);background:none;color:var(--ai);border-radius:99px;width:30px;height:30px;cursor:pointer;font-size:14px}
+.mean{text-align:center;font-size:20px;font-weight:700}
+.pos{font-size:11px;font-weight:500;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 5px;margin-right:6px;vertical-align:2px}
+.ex{border-top:1px dashed var(--line);padding-top:12px;font-size:14px}
+.ex .jp{font-family:var(--display);font-weight:600;font-size:16px}
+.ex .jp b{color:var(--ai)}
+.ex .zh{color:var(--muted)}
+.hidden-ans{filter:blur(7px);cursor:pointer;user-select:none;transition:filter .2s}
+.actions{display:grid;gap:10px;margin-top:auto}
+.actions.two{grid-template-columns:1fr 1.4fr}
+.actions.three{grid-template-columns:repeat(3,1fr)}
+.btn{font:inherit;font-weight:700;font-size:15px;border-radius:12px;padding:13px 8px;cursor:pointer;border:1px solid var(--line);background:var(--paper);color:var(--ink)}
+.btn.primary{background:var(--ai);border-color:var(--ai);color:var(--paper)}
+.btn small{display:block;font-weight:400;font-size:11px;color:var(--muted)}
+.btn.again{color:var(--bad)} .btn.hard{color:var(--warn)} .btn.easy{color:var(--good)}
+.choices{display:grid;gap:10px;margin-top:auto}
+.choice{font:inherit;text-align:left;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer;font-size:15px}
+.choice.right{border-color:var(--good);color:var(--good);font-weight:700}
+.choice.wrong{border-color:var(--bad);color:var(--bad);text-decoration:line-through}
+.empty{margin:auto 0;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center}
+.empty h2{font-family:var(--display);font-size:24px;margin:0}
+.empty p{margin:0;color:var(--muted);max-width:30ch}
+.list{display:flex;flex-direction:column}
+.row{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row .w{font-family:var(--display);font-weight:800;font-size:20px}
+.row .m{font-size:13px;color:var(--muted);min-width:0}
+.chip{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;white-space:nowrap}
+.chip.new{background:var(--line);color:var(--muted)}
+.chip.learn{background:var(--ai-soft);color:var(--ai)}
+.chip.wrong{color:var(--bad);border:1px solid var(--bad)}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{font:inherit;font-size:12px;border:1px solid var(--line);background:none;color:var(--muted);border-radius:99px;padding:3px 10px;cursor:pointer}
+.seg button[aria-pressed="true"]{border-color:var(--ai);color:var(--ai);font-weight:700}
+.note{font-size:12px;color:var(--muted);text-align:center}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@keyframes in{from{transform:translateY(6px);opacity:.4}to{transform:none;opacity:1}}
+.card>*{animation:in .25s ease-out}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="brand">26秒<small>日文單字</small></div>
+    <span class="level">JLPT N5</span>
+  </header>
+  <nav role="tablist">
+    <button role="tab" id="t-skim" data-v="skim" aria-selected="true">今日</button>
+    <button role="tab" id="t-review" data-v="review">複習<span class="badge" id="b-review" hidden></span></button>
+    <button role="tab" id="t-quiz" data-v="quiz">測驗</button>
+    <button role="tab" id="t-book" data-v="book">單字本</button>
+  </nav>
+  <div>
+    <div class="stats"><span id="s-left"></span><span id="s-right"></span></div>
+    <div class="bar"><i id="s-bar" style="width:0"></i></div>
+  </div>
+  <section class="card" id="card" aria-live="polite"></section>
+  <p class="note">進度只存在這台裝置的瀏覽器裡 · 發音使用瀏覽器內建語音</p>
+</div>
+
+<script>
+const W=[
+["食べる","たべる","吃","動","🍙","朝ごはんにパンを<b>食べる</b>。","早餐吃麵包。"],
+["飲む","のむ","喝","動","🍵","毎朝お茶を<b>飲む</b>。","每天早上喝茶。"],
+["行く","いく","去","動","🚶","明日、学校へ<b>行く</b>。","明天去學校。"],
+["来る","くる","來","動","👋","友だちが家に<b>来る</b>。","朋友來家裡。"],
+["見る","みる","看","動","👀","夜、テレビを<b>見る</b>。","晚上看電視。"],
+["聞く","きく","聽；問","動","🎧","音楽を<b>聞く</b>のが好きです。","我喜歡聽音樂。"],
+["書く","かく","寫","動","✍️","手紙を<b>書く</b>。","寫信。"],
+["読む","よむ","讀、閱讀","動","📖","電車で本を<b>読む</b>。","在電車上看書。"],
+["買う","かう","買","動","🛍️","駅で切符を<b>買う</b>。","在車站買車票。"],
+["寝る","ねる","睡覺","動","😴","十一時に<b>寝る</b>。","十一點睡覺。"],
+["起きる","おきる","起床","動","⏰","六時に<b>起きる</b>。","六點起床。"],
+["待つ","まつ","等待","動","⌛","駅で友だちを<b>待つ</b>。","在車站等朋友。"],
+["雨","あめ","雨","名","🌧️","今日は<b>雨</b>が降っています。","今天在下雨。"],
+["山","やま","山","名","⛰️","週末、<b>山</b>に登ります。","週末去爬山。"],
+["川","かわ","河川","名","🏞️","<b>川</b>で魚を見ました。","在河裡看到魚。"],
+["花","はな","花","名","🌸","春は<b>花</b>がきれいです。","春天的花很美。"],
+["猫","ねこ","貓","名","🐈","<b>猫</b>が窓の外を見ている。","貓在看窗外。"],
+["犬","いぬ","狗","名","🐕","公園で<b>犬</b>と遊ぶ。","在公園和狗玩。"],
+["駅","えき","車站","名","🚉","<b>駅</b>まで歩いて十分です。","走到車站十分鐘。"],
+["電車","でんしゃ","電車","名","🚃","<b>電車</b>で会社へ行きます。","搭電車去公司。"],
+["友だち","ともだち","朋友","名","🧑‍🤝‍🧑","<b>友だち</b>と映画を見ました。","和朋友看了電影。"],
+["先生","せんせい","老師","名","🧑‍🏫","<b>先生</b>に質問します。","向老師提問。"],
+["時計","とけい","時鐘、手錶","名","⌚","この<b>時計</b>は高いです。","這支錶很貴。"],
+["天気","てんき","天氣","名","☀️","今日はいい<b>天気</b>ですね。","今天天氣真好呢。"],
+["大きい","おおきい","大的","い形","🐘","この部屋は<b>大きい</b>です。","這個房間很大。"],
+["小さい","ちいさい","小的","い形","🐜","<b>小さい</b>かばんを買った。","買了小包包。"],
+["高い","たかい","高的；貴的","い形","🗼","東京タワーは<b>高い</b>。","東京鐵塔很高。"],
+["安い","やすい","便宜的","い形","🏷️","この店は<b>安い</b>です。","這家店很便宜。"],
+["新しい","あたらしい","新的","い形","✨","<b>新しい</b>靴をはく。","穿新鞋。"],
+["暑い","あつい","（天氣）熱","い形","🥵","八月はとても<b>暑い</b>。","八月非常熱。"],
+["寒い","さむい","（天氣）冷","い形","🥶","北海道の冬は<b>寒い</b>。","北海道的冬天很冷。"],
+["静か","しずか","安靜","な形","🤫","図書館は<b>静か</b>です。","圖書館很安靜。"],
+["元気","げんき","有精神、健康","な形","💪","おばあちゃんは<b>元気</b>です。","奶奶很健康。"],
+["好き","すき","喜歡","な形","❤️","日本の料理が<b>好き</b>です。","喜歡日本料理。"]
+].map((a,i)=>({id:i,w:a[0],k:a[1],m:a[2],p:a[3],c:a[4],ej:a[5],ez:a[6]}));
+
+const DAILY=8, DAY=864e5, KEY="n26-v1";
+let S={cards:{},wrong:{},skimDay:"",skimDone:0,secs:0,secsDay:""};
+try{const r=localStorage.getItem(KEY); if(r) S=Object.assign(S,JSON.parse(r));}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const today=()=>new Date().toDateString();
+if(S.skimDay!==today()){S.skimDay=today();S.skimDone=0}
+if(S.secsDay!==today()){S.secsDay=today();S.secs=0}
+
+let view="skim", reveal=false, extra=false, quiz=null, bookFilter="all";
+const $=id=>document.getElementById(id), card=$("card");
+const esc=s=>s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+
+function speak(t){try{const u=new SpeechSynthesisUtterance(t);u.lang="ja-JP";u.rate=.9;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
+const unseen=()=>W.filter(w=>!S.cards[w.id]);
+const due=()=>W.filter(w=>S.cards[w.id]&&S.cards[w.id].due<=Date.now()).sort((a,b)=>S.cards[a.id].due-S.cards[b.id].due);
+const learned=()=>W.filter(w=>S.cards[w.id]);
+
+function ring(){
+  const s=Math.min(S.secs%26,26), off=100-(s/26)*100;
+  return `<svg class="ring" viewBox="0 0 36 36" aria-label="本輪 ${s} 秒"><circle class="t" cx="18" cy="18" r="15.9"/><circle class="p" cx="18" cy="18" r="15.9" pathLength="100" stroke-dasharray="100" stroke-dashoffset="${off}" transform="rotate(-90 18 18)"/><text x="18" y="22" text-anchor="middle">${26-s}</text></svg>`;
+}
+function face(w,hide){
+  const h=hide?' hidden-ans" data-reveal="1':'';
+  return `<div class="cue" aria-hidden="true">${w.c}</div>
+  <div class="word">${esc(w.w)}</div>
+  <div class="kana">${w.k}<button class="speak" data-say="${w.w}" aria-label="播放發音">▶</button></div>
+  <div class="mean${h}"><span class="pos">${w.p}</span>${esc(w.m)}</div>
+  <div class="ex${h}"><div class="jp">${w.ej}</div><div class="zh">${esc(w.ez)}</div></div>`;
+}
+
+function render(){
+  document.querySelectorAll("nav button").forEach(b=>b.setAttribute("aria-selected",b.dataset.v===view));
+  const d=due().length; $("b-review").hidden=!d; $("b-review").textContent=d;
+  let L="",R="",pct=0,h="";
+  if(view==="skim"){
+    const goal=extra?W.length:DAILY, pool=unseen();
+    L=`今日新字 ${S.skimDone} / ${DAILY}`; R=`已學 ${learned().length} / ${W.length}`; pct=Math.min(S.skimDone/DAILY,1)*100;
+    const w=pool[0];
+    if(!w) h=`<div class="empty"><h2>全部學完了</h2><p>這組 N5 單字都已加入複習，接下來去複習和測驗吧。</p><button class="btn primary" data-go="quiz">開始測驗</button></div>`;
+    else if(S.skimDone>=DAILY&&!extra) h=`<div class="empty"><h2>今天的 ${DAILY} 個完成</h2><p>還想多背的話，可以繼續學新字，不用等到明天。</p><button class="btn primary" data-act="extra">再學 5 個</button><button class="btn" data-go="review">去複習（${d}）</button></div>`;
+    else h=`<div class="top"><span>新字速覽</span>${ring()}</div>${face(w,false)}
+      <div class="actions two"><button class="btn" data-skim="skip">已經會了<small>不排入複習</small></button><button class="btn primary" data-skim="learn">記下來<small>加入複習</small></button></div>`;
+  }
+  if(view==="review"){
+    const q=due(), total=learned().length;
+    L=`待複習 ${q.length}`; R=`複習中 ${total}`; pct=total?(1-q.length/total)*100:0;
+    const w=q[0];
+    if(!w) h=`<div class="empty"><h2>目前沒有要複習的字</h2><p>${total?"下一張卡片到期時這裡會出現。":"先在「今日」學幾個新字。"}</p><button class="btn" data-go="${total?"quiz":"skim"}">${total?"做個測驗":"去學新字"}</button></div>`;
+    else{
+      const c=S.cards[w.id], last=c.last?Math.round((Date.now()-c.last)/DAY):null;
+      h=`<div class="top"><span>${last===null?"第一次複習":last===0?"今天看過":`上次複習 ${last} 天前`}</span>${ring()}</div>${face(w,!reveal)}
+      ${reveal?`<div class="actions three">
+        <button class="btn again" data-grade="0">再一次<small>1 分鐘</small></button>
+        <button class="btn hard" data-grade="1">有點難<small>${fmt(next(c,1))}</small></button>
+        <button class="btn easy" data-grade="2">簡單<small>${fmt(next(c,2))}</small></button></div>`
+      :`<div class="actions"><button class="btn primary" data-act="reveal">想好了，看答案</button></div>`}`;
+    }
+  }
+  if(view==="quiz"){
+    if(!quiz) h=quizStart();
+    else{
+      L=`第 ${Math.min(quiz.i+1,quiz.qs.length)} / ${quiz.qs.length} 題`; R=`答對 ${quiz.ok}`; pct=quiz.i/quiz.qs.length*100;
+      if(quiz.i>=quiz.qs.length){
+        const wr=Object.keys(S.wrong).length;
+        h=`<div class="empty"><h2>${quiz.ok} / ${quiz.qs.length}</h2><p>${quiz.ok===quiz.qs.length?"全對，很穩。":"答錯的字已收進錯題本，可以只考錯題。"}</p>
+        <button class="btn primary" data-act="quiz-again">再考一次</button>${wr?`<button class="btn" data-act="quiz-wrong">只考錯題（${wr}）</button>`:""}</div>`;
+      }else{
+        const q=quiz.qs[quiz.i];
+        h=`<div class="top"><span>${q.mode==="m"?"選出正確意思":"選出正確讀音"}</span><span>${quiz.wrongOnly?"錯題模式":"隨機"}</span></div>
+        <div class="word">${esc(q.w.w)}</div>
+        ${q.mode==="m"?`<div class="kana">${q.w.k}<button class="speak" data-say="${q.w.w}" aria-label="播放發音">▶</button></div>`:""}
+        <div class="choices">${q.opts.map((o,j)=>{
+          let cls=""; if(q.picked!==undefined){ if(o.id===q.w.id) cls="right"; else if(j===q.picked) cls="wrong"; }
+          return `<button class="choice ${cls}" data-pick="${j}" ${q.picked!==undefined?"disabled":""}>${esc(q.mode==="m"?o.m:o.k)}</button>`}).join("")}</div>
+        ${q.picked!==undefined?`<button class="btn primary" data-act="quiz-next">下一題</button>`:""}`;
+      }
+    }
+  }
+  if(view==="book"){
+    const wr=Object.keys(S.wrong).length;
+    L=`共 ${W.length} 字`; R=`錯題 ${wr}`; pct=learned().length/W.length*100;
+    const list=W.filter(w=>bookFilter==="all"||(bookFilter==="learn"&&S.cards[w.id])||(bookFilter==="wrong"&&S.wrong[w.id]));
+    h=`<div class="seg">${[["all","全部"],["learn","複習中"],["wrong","錯題"]].map(([k,t])=>`<button data-filter="${k}" aria-pressed="${bookFilter===k}">${t}</button>`).join("")}</div>
+    <div class="list">${list.length?list.map(w=>{const c=S.cards[w.id];
+      return `<div class="row"><span class="w">${esc(w.w)}</span><span class="m">${w.k} · ${esc(w.m)}</span>${S.wrong[w.id]?`<span class="chip wrong">錯 ${S.wrong[w.id]}</span>`:c?`<span class="chip learn">${c.due<=Date.now()?"待複習":fmt(c.due-Date.now())+"後"}</span>`:`<span class="chip new">未學</span>`}</div>`}).join(""):`<p class="note">這裡還沒有單字。</p>`}</div>
+    <button class="btn" data-act="reset">清除所有進度</button>`;
+  }
+  $("s-left").textContent=L; $("s-right").textContent=R; $("s-bar").style.width=pct+"%";
+  card.innerHTML=h;
+}
+
+/* simple SM-2 style scheduling */
+function next(c,g){const iv=c.iv||0; if(g===1) return Math.max(DAY,iv*1.2); return Math.max(DAY*(iv?1:2),iv*(c.ease||2.5));}
+function fmt(ms){if(ms<36e5) return Math.max(1,Math.round(ms/6e4))+" 分"; if(ms<DAY) return Math.round(ms/36e5)+" 小時"; return Math.round(ms/DAY)+" 天";}
+function grade(g){
+  const w=due()[0], c=S.cards[w.id]; c.last=Date.now();
+  if(g===0){c.iv=0;c.ease=Math.max(1.3,(c.ease||2.5)-.2);c.due=Date.now()+6e4;}
+  else{c.iv=next(c,g);c.due=Date.now()+c.iv; if(g===2)c.ease=(c.ease||2.5)+.1; else c.ease=Math.max(1.3,(c.ease||2.5)-.05);}
+  reveal=false; save(); render();
+}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+function makeQuiz(wrongOnly){
+  let pool=wrongOnly?W.filter(w=>S.wrong[w.id]):learned(); if(pool.length<4&&!wrongOnly) pool=W.slice(0,10);
+  const qs=shuffle(pool).slice(0,10).map(w=>{
+    const mode=Math.random()<.6?"m":"k";
+    const others=shuffle(W.filter(o=>o.id!==w.id&&(mode==="m"?o.m!==w.m:o.k!==w.k))).slice(0,3);
+    return {w,mode,opts:shuffle([w,...others])};
+  });
+  quiz={qs,i:0,ok:0,wrongOnly};
+}
+function quizStart(){
+  const n=learned().length, wr=Object.keys(S.wrong).length;
+  return `<div class="empty"><h2>小測驗</h2><p>${n>=4?`從你複習中的 ${n} 個字出 10 題，題型是看字選意思、看字選讀音。`:"還沒學幾個字，先用前 10 個 N5 單字出題。"}</p>
+  <button class="btn primary" data-act="quiz-again">開始</button>${wr?`<button class="btn" data-act="quiz-wrong">只考錯題（${wr}）</button>`:""}</div>`;
+}
+
+document.querySelector("nav").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;view=b.dataset.v;reveal=false;if(view==="quiz"&&quiz&&quiz.i>=quiz.qs.length)quiz=null;render()});
+card.addEventListener("click",e=>{
+  const t=e.target.closest("[data-say],[data-skim],[data-grade],[data-act],[data-pick],[data-go],[data-filter],[data-reveal]"); if(!t) return;
+  const d=t.dataset;
+  if(d.say){speak(d.say);return}
+  if(d.reveal&&view==="review"){reveal=true;render();return}
+  if(d.go){view=d.go;render();return}
+  if(d.filter){bookFilter=d.filter;render();return}
+  if(d.skim){const w=unseen()[0]; S.cards[w.id]= d.skim==="learn"?{due:Date.now(),iv:0,ease:2.5}:{due:Date.now()+30*DAY,iv:30*DAY,ease:3}; S.skimDone++; save(); render(); const n=unseen()[0]; if(n&&view==="skim") speak(n.w); return}
+  if(d.grade){grade(+d.grade);return}
+  if(d.pick!==undefined){const q=quiz.qs[quiz.i]; q.picked=+d.pick; const ok=q.opts[q.picked].id===q.w.id;
+    if(ok){quiz.ok++; if(S.wrong[q.w.id]&&quiz.wrongOnly){delete S.wrong[q.w.id]}} else S.wrong[q.w.id]=(S.wrong[q.w.id]||0)+1;
+    speak(q.w.w); save(); render(); return}
+  const a=d.act;
+  if(a==="reveal"){reveal=true;render()}
+  if(a==="extra"){extra=true;S.skimDone=DAILY-5;render()}
+  if(a==="quiz-again"){makeQuiz(false);render()}
+  if(a==="quiz-wrong"){makeQuiz(true);render()}
+  if(a==="quiz-next"){quiz.i++;render()}
+  if(a==="reset"){ if(t.dataset.confirm){S={cards:{},wrong:{},skimDay:today(),skimDone:0,secs:0,secsDay:today()};save();quiz=null;render()} else {t.dataset.confirm=1;t.textContent="再按一次確認清除";t.classList.add("again")} }
+});
+document.addEventListener("keydown",e=>{
+  if(view==="skim"&&unseen()[0]&&(S.skimDone<DAILY||extra)){ if(e.key==="ArrowRight")card.querySelector('[data-skim="learn"]')?.click(); if(e.key==="ArrowLeft")card.querySelector('[data-skim="skip"]')?.click(); }
+  if(view==="review"){ if(e.key===" "&&!reveal){e.preventDefault();reveal=true;render()} else if(reveal&&"123".includes(e.key))grade(+e.key-1); }
+});
+setInterval(()=>{if(document.hidden)return;S.secs++; if(S.secs%5===0)save(); const r=card.querySelector(".ring"); if(r) r.outerHTML=ring();},1000);
+render();
+</script>
+</body>
+</html>
