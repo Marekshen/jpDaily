@@ -119,6 +119,7 @@ button:focus-visible{outline:2px solid var(--ai);outline-offset:2px}
 </div>
 
 <script src="data/minna-1.js"></script>
+<script src="data/minna-2.js"></script>
 <script>
 const W=(window.BOOKS||[]).flatMap(b=>b.words.map(a=>({id:`${b.id}-${a[0]}-${a[1]}`,b:b.id,bn:b.name,l:a[0],w:a[1],k:a[2],m:a[3],p:a[4],c:a[5],ex:a[6]||[]})));
 const LESSONS=[...new Map(W.map(w=>[`${w.b}-${w.l}`,{key:`${w.b}-${w.l}`,label:`${w.bn} 第${w.l}課`}])).values()];
