@@ -137,7 +137,10 @@ let view="skim", reveal=false, extra=false, quiz=null, bookFilter="lesson";
 const $=id=>document.getElementById(id), card=$("card");
 const esc=s=>s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
 
-function speak(t){try{const u=new SpeechSynthesisUtterance(t);u.lang="ja-JP";u.rate=.9;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
+const FIX=[["何語","なにご"],["何人","なんにん"],["何時","なんじ"],["何分","なんぷん"],["何曜日","なんようび"],["何番","なんばん"],["何年","なんねん"],["何月","なんがつ"],["何日","なんにち"],["何歳","なんさい"],["何階","なんがい"],["何回","なんかい"],["何枚","なんまい"],["何台","なんだい"],["一人","ひとり"],["二人","ふたり"],["二十日","はつか"],["十日","とおか"],
+  [/何(?=[のでとだ]|です)/g,"なん"],[/何(?=[をがもかにへ])/g,"なに"],[/([三四五六七八九十百千]+)人/g,"$1にん"],[/([ァ-ヶー]+|台湾|中国|韓国|日本|外国)人/g,"$1じん"]];
+const reading=t=>FIX.reduce((a,[r,v])=>a.replaceAll(r,v),t);
+function speak(t){try{const u=new SpeechSynthesisUtterance(reading(t));u.lang="ja-JP";u.rate=.9;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
 const lidx=k=>LESSONS.findIndex(l=>l.key===k);
 const unseen=()=>{const f=lidx(S.from);return W.filter(w=>!S.cards[w.id]&&lidx(lkey(w))>=f)};
 const plain=h=>h.replace(/<[^>]+>/g,"").replace(/"/g,"");
@@ -154,7 +157,7 @@ function face(w,hide){
   <div class="word">${esc(w.w)}</div>
   <div class="kana">${w.k}<button class="speak" data-say="${w.k}" aria-label="播放發音">▶</button></div>
   <div class="mean${h}"><span class="pos">${w.p}</span>${esc(w.m)}</div>
-  ${w.ex.length?`<div class="ex${h}">${w.ex.map(([t,j,z])=>`<div class="exi"><div class="jp">${t?`<span class="tag">${t}</span>`:""}${j}</div><button class="speak" data-say="${plain(j)}" aria-label="播放例句">▶</button><div class="zh">${esc(z)}</div></div>`).join("")}</div>`:""}`;
+  ${w.ex.length?`<div class="ex${h}">${w.ex.map(([t,j,z,r])=>`<div class="exi"><div class="jp">${t?`<span class="tag">${t}</span>`:""}${j}</div><button class="speak" data-say="${r||plain(j)}" aria-label="播放例句">▶</button><div class="zh">${esc(z)}</div></div>`).join("")}</div>`:""}`;
 }
 
 function render(){
